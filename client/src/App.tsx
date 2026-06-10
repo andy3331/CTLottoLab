@@ -602,12 +602,15 @@ export function App() {
                     <tr key={draw.id}>
                       <td>{draw.drawDate}</td>
                       <td>
-                        <div className="ball-row">
-                          {draw.numbers.map((number) => (
-                            <span className="ball" key={`${draw.id}-${number}`}>
-                              {number}
-                            </span>
-                          ))}
+                        <div className="history-numbers">
+                          <div className="ball-row">
+                            {draw.numbers.map((number) => (
+                              <span className="ball" key={`${draw.id}-${number}`}>
+                                {number}
+                              </span>
+                            ))}
+                          </div>
+                          <div className="combo-text">{draw.numbers.join(" - ")}</div>
                         </div>
                       </td>
                       <td>{draw.sourceFileName ?? "N/A"}</td>
