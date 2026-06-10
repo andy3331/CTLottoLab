@@ -265,7 +265,7 @@ export function App() {
               <Panel title="Latest Draw">
                 <div className="ticket-top">
                   <strong>{formatDisplayDate(summary.lottoGameInfo?.latestDrawDate)}</strong>
-                  <span className="score">{formatWinnerStatus(summary)}</span>
+                  <span className="score">{formatLatestDrawWinnerLabel(summary)}</span>
                 </div>
                 <div className="ball-row">
                   {summary.lottoGameInfo?.latestDrawNumbers.length ? (
@@ -275,7 +275,7 @@ export function App() {
                       </span>
                     ))
                   ) : (
-                    <p className="hint">Latest draw numbers are not available yet.</p>
+                    <p className="hint">Latest draw numbers have not been refreshed from CT Lottery yet.</p>
                   )}
                 </div>
                 <p className="sync-line">
@@ -962,6 +962,17 @@ function formatWinnerStatus(summary: SummaryResponse) {
     return "Unknown";
   }
   return count > 0 ? `Yes (${count})` : "No";
+}
+
+function formatLatestDrawWinnerLabel(summary: SummaryResponse) {
+  const count = summary.lottoGameInfo?.jackpotWinnerCount;
+  if (count == null) {
+    return "Jackpot winner unknown";
+  }
+  if (count === 0) {
+    return "No jackpot winner";
+  }
+  return count === 1 ? "1 jackpot winner" : `${count} jackpot winners`;
 }
 
 function getRecentBacktestHighlight(summary: SummaryResponse) {
