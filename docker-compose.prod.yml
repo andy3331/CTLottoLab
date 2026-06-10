@@ -1,0 +1,33 @@
+services:
+  api:
+    build:
+      context: .
+      target: api-prod
+    container_name: lottolens-ct-api
+    env_file:
+      - .env
+    environment:
+      PORT: ${API_PORT:-4000}
+      NODE_ENV: production
+      DATABASE_PATH: ${DATABASE_PATH:-/data/lottolens.db}
+    restart: unless-stopped
+    volumes:
+      - lottolens_data:/data
+    expose:
+      - "4000"
+
+  web:
+    build:
+      context: .
+      target: web-prod
+    container_name: lottolens-ct-web
+    depends_on:
+      - api
+    env_file:
+      - .env
+    ports:
+      - "${APP_PORT:-5181}:80"
+    restart: unless-stopped
+
+volumes:
+  lottolens_data:

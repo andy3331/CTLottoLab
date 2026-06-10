@@ -1,0 +1,11 @@
+node_modules
+dist
+coverage
+client/dist
+server/dist
+server/data
+*.db
+*.sqlite
+*.sqlite3
+.env
+app-master.json

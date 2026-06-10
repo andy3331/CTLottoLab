@@ -1,0 +1,36 @@
+services:
+  api:
+    build:
+      context: .
+      target: api-dev
+    container_name: lottolens-ct-api-dev
+    environment:
+      PORT: 4000
+      NODE_ENV: development
+      DATABASE_PATH: /data/lottolens.db
+    volumes:
+      - .:/app
+      - lottolens_root_node_modules:/app/node_modules
+      - lottolens_data:/data
+    expose:
+      - "4000"
+
+  web:
+    build:
+      context: .
+      target: client-dev
+    container_name: lottolens-ct-web-dev
+    depends_on:
+      - api
+    environment:
+      VITE_PROXY_TARGET: http://api:4000
+      CHOKIDAR_USEPOLLING: "true"
+    ports:
+      - "${APP_PORT:-5181}:5173"
+    volumes:
+      - .:/app
+      - lottolens_root_node_modules:/app/node_modules
+
+volumes:
+  lottolens_root_node_modules:
+  lottolens_data:
