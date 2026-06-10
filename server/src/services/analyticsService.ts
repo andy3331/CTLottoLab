@@ -1,11 +1,10 @@
 import type { DashboardSuggestion, FrequencyRow, RepeatedCombination, SummaryResponse } from "@shared/types";
-import { CT_LOTTO_CONFIG, PICKER_MODES } from "@shared/game";
+import { CT_LOTTO_CONFIG } from "@shared/game";
 import { getDb } from "../db/database.js";
 import { getCtLottoGame } from "./gameService.js";
-import { getPickerBacktestSummary } from "./pickerBacktestService.js";
+import { getLatestStoredDashboardSuggestions, getPickerBacktestSummary } from "./pickerBacktestService.js";
 import { getCtLottoGameInfo, getSyncStatus } from "./syncService.js";
 import { listDraws } from "./drawService.js";
-import { generateTickets, getDefaultDashboardPickerRequest } from "./pickerService.js";
 
 export function getFrequencyAnalytics(): FrequencyRow[] {
   const db = getDb();
@@ -118,10 +117,7 @@ export function getSummaryAnalytics(): SummaryResponse {
 }
 
 function getDashboardSuggestions(): DashboardSuggestion[] {
-  return PICKER_MODES.map((mode) => ({
-    mode,
-    ticket: generateTickets(getDefaultDashboardPickerRequest(mode))[0],
-  })).filter((entry) => Boolean(entry.ticket)) as DashboardSuggestion[];
+  return getLatestStoredDashboardSuggestions();
 }
 
 export function getRepeatedCombinations(): RepeatedCombination[] {

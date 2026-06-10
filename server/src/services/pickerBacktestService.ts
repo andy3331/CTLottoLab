@@ -1,5 +1,6 @@
 import { PICKER_MODES, type PickerMode } from "@shared/game";
 import type {
+  DashboardSuggestion,
   PickerBacktestHumanLikenessPoint,
   PickerBacktestModeSummary,
   PickerBacktestRun,
@@ -226,6 +227,63 @@ export function getPickerBacktestSummary(): PickerBacktestSummary {
     recentRuns,
     humanLikenessTrend: buildHumanLikenessTrend(rows),
   };
+}
+
+export function getLatestStoredDashboardSuggestions(): DashboardSuggestion[] {
+  const db = getDb();
+  const game = getCtLottoGame();
+  const latestGeneratedForDate = db
+    .prepare(
+      `
+        SELECT MAX(generated_for_date) as latestGeneratedForDate
+        FROM picker_backtest_runs
+        WHERE game_id = ?
+      `,
+    )
+    .get(game.id) as { latestGeneratedForDate: string | null };
+
+  if (!latestGeneratedForDate.latestGeneratedForDate) {
+    return [];
+  }
+
+  const rows = db
+    .prepare(
+      `
+        SELECT
+          r.mode as mode,
+          r.generated_for_date as generatedForDate,
+          t.numbers_json as ticketNumbersJson,
+          t.score as ticketScore,
+          t.human_likeness_score as humanLikenessScore,
+          t.human_likeness_reasons_json as humanLikenessReasonsJson,
+          t.explanation as explanation
+        FROM picker_backtest_runs r
+        JOIN picker_backtest_tickets t ON t.run_id = r.id
+        WHERE r.game_id = ? AND r.generated_for_date = ?
+        ORDER BY r.mode ASC
+      `,
+    )
+    .all(game.id, latestGeneratedForDate.latestGeneratedForDate) as Array<{
+      mode: PickerMode;
+      generatedForDate: string;
+      ticketNumbersJson: string;
+      ticketScore: number;
+      humanLikenessScore: number;
+      humanLikenessReasonsJson: string;
+      explanation: string;
+    }>;
+
+  return rows.map((row) => ({
+    mode: row.mode,
+    generatedForDate: row.generatedForDate,
+    ticket: {
+      numbers: JSON.parse(row.ticketNumbersJson) as number[],
+      score: row.ticketScore,
+      humanLikenessScore: row.humanLikenessScore,
+      humanLikenessReasons: JSON.parse(row.humanLikenessReasonsJson) as string[],
+      explanation: row.explanation,
+    },
+  }));
 }
 
 function summarizeMode(

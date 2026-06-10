@@ -287,15 +287,10 @@ export function App() {
               </Panel>
               <Panel title="Quick Picks for Next Draw">
                 <div className="page-header">
-                  <span className="hint">Choose which strategy cards live on the dashboard.</span>
-                  <div className="action-row">
-                    <button className="ghost-btn" onClick={() => void refreshAll()}>
-                      Refresh Picks
-                    </button>
-                    <button className="ghost-btn" onClick={() => setDashboardFavoriteModes(DEFAULT_DASHBOARD_FAVORITES)}>
-                      Reset Favorites
-                    </button>
-                  </div>
+                  <span className="hint">Stored daily picks that stay aligned with Insights and backtest history.</span>
+                  <button className="ghost-btn" onClick={() => setDashboardFavoriteModes(DEFAULT_DASHBOARD_FAVORITES)}>
+                    Reset Favorites
+                  </button>
                 </div>
                 <div className="favorite-mode-list">
                   {PICKER_MODES.map((mode) => {

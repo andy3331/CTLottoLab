@@ -70,7 +70,14 @@ export interface LottoGameInfo {
 
 export interface DashboardSuggestion {
   mode: PickerMode;
-  ticket: GeneratedTicket;
+  generatedForDate: string;
+  ticket: {
+    numbers: number[];
+    score: number;
+    humanLikenessScore: number;
+    humanLikenessReasons: string[];
+    explanation: string;
+  };
 }
 
 export interface RepeatedCombination {

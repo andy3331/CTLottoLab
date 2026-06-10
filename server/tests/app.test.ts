@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { getDb, resetDbForTests } from "../src/db/database.js";
 import { getFrequencyAnalytics, getSummaryAnalytics } from "../src/services/analyticsService.js";
 import { importCtLottoFile } from "../src/services/importService.js";
+import { ensureBacktestRunsForDate } from "../src/services/pickerBacktestService.js";
 import { generateTickets } from "../src/services/pickerService.js";
 
 const sampleHtml = `
@@ -135,4 +136,14 @@ describe("imports, analytics, and picker", () => {
     ]);
     expect(summary.lottoGameInfo?.estimatedJackpot ?? null).toBeNull();
   });
+
+  it("reuses stored dashboard suggestions for the same generated day", () => {
+    ensureBacktestRunsForDate("2026-06-10");
+
+    const first = getSummaryAnalytics();
+    const second = getSummaryAnalytics();
+
+    expect(first.dashboardSuggestions.length).toBeGreaterThan(0);
+    expect(first.dashboardSuggestions).toEqual(second.dashboardSuggestions);
+  }, 10000);
 });
