@@ -23,10 +23,13 @@ export const api = {
   getSummary: () => request<SummaryResponse>("/analytics/summary"),
   getFrequency: () => request<FrequencyRow[]>("/analytics/frequency"),
   getSyncStatus: () => request<SyncStatus>("/sync/status"),
-  getDraws: (query?: { date?: string; number?: number }) => {
+  getDraws: (query?: { date?: string; number?: number; jackpotWinnerCount?: number }) => {
     const params = new URLSearchParams();
     if (query?.date) params.set("date", query.date);
     if (query?.number) params.set("number", String(query.number));
+    if (query?.jackpotWinnerCount !== undefined) {
+      params.set("jackpotWinnerCount", String(query.jackpotWinnerCount));
+    }
     return request<DrawRecord[]>(`/draws${params.size ? `?${params.toString()}` : ""}`);
   },
   importFile: async (file: File) => {

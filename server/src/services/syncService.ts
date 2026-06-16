@@ -192,6 +192,7 @@ export async function refreshCtLottoGameInfo() {
     setSetting("ct_lotto.game_info.last_refreshed_at", new Date().toISOString());
     setSetting("ct_lotto.game_info.last_status", "success");
     setSetting("ct_lotto.game_info.last_message", "Refreshed next draw and jackpot details.");
+    updateStoredDrawJackpotWinnerCount(parsed.latestDrawDate, payoutSummary.jackpotWinnerCount);
 
     return {
       ...parsed,
@@ -220,6 +221,10 @@ async function fetchCtLottoPayoutSummary(payoutDateToken: string) {
   }
 
   return parseCtLottoPayoutSummary(await response.text());
+}
+
+export async function fetchCtLottoPayoutSummaryForDrawDate(drawDateIso: string) {
+  return fetchCtLottoPayoutSummary(formatPayoutDateToken(drawDateIso));
 }
 
 export function getNextSyncRange() {
@@ -273,6 +278,11 @@ function formatCtLotteryDate(isoDate: string) {
   return `${Number(month)}/${Number(day)}/${year}`;
 }
 
+function formatPayoutDateToken(isoDate: string) {
+  const [year, month, day] = isoDate.split("-");
+  return `${month}${day}${year}`;
+}
+
 function addDays(isoDate: string, days: number) {
   const date = new Date(`${isoDate}T00:00:00Z`);
   date.setUTCDate(date.getUTCDate() + days);
@@ -288,6 +298,22 @@ function localCalendarDate(date: Date) {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function updateStoredDrawJackpotWinnerCount(drawDateIso: string | null, jackpotWinnerCount: number | null) {
+  if (!drawDateIso) {
+    return;
+  }
+
+  const db = getDb();
+  db.prepare(
+    `
+      UPDATE draws
+      SET jackpot_winner_count = ?,
+          jackpot_winner_checked_at = CURRENT_TIMESTAMP
+      WHERE draw_date = ?
+    `,
+  ).run(jackpotWinnerCount, drawDateIso);
 }
 
 function setSetting(key: string, value: string) {

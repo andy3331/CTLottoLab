@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { getDb, resetDbForTests } from "../src/db/database.js";
 import { getFrequencyAnalytics, getSummaryAnalytics } from "../src/services/analyticsService.js";
+import { listDraws } from "../src/services/drawService.js";
 import { importCtLottoFile } from "../src/services/importService.js";
 import { ensureBacktestRunsForDate } from "../src/services/pickerBacktestService.js";
 import { generateTickets } from "../src/services/pickerService.js";
@@ -146,4 +147,25 @@ describe("imports, analytics, and picker", () => {
     expect(first.dashboardSuggestions.length).toBeGreaterThan(0);
     expect(first.dashboardSuggestions).toEqual(second.dashboardSuggestions);
   }, 10000);
+
+  it("filters draw history by stored jackpot winner count", async () => {
+    importCtLottoFile({
+      fileName: "sample.html",
+      content: sampleHtml,
+    });
+
+    const db = getDb();
+    db.prepare("UPDATE draws SET jackpot_winner_count = ?, jackpot_winner_checked_at = CURRENT_TIMESTAMP WHERE draw_date = ?")
+      .run(0, "2026-06-05");
+    db.prepare("UPDATE draws SET jackpot_winner_count = ?, jackpot_winner_checked_at = CURRENT_TIMESTAMP WHERE draw_date = ?")
+      .run(2, "2026-06-02");
+    db.prepare("UPDATE draws SET jackpot_winner_checked_at = CURRENT_TIMESTAMP WHERE draw_date = ?")
+      .run("2026-05-29");
+
+    const noWinnerDraws = listDraws({ jackpotWinnerCount: 0 });
+    const twoWinnerDraws = listDraws({ jackpotWinnerCount: 2 });
+
+    expect(noWinnerDraws.map((draw) => draw.drawDate)).toEqual(["2026-06-05"]);
+    expect(twoWinnerDraws.map((draw) => draw.drawDate)).toEqual(["2026-06-02"]);
+  });
 });

@@ -3,7 +3,7 @@ import multer from "multer";
 import { z } from "zod";
 import { PICKER_MODES } from "@shared/game";
 import { getFrequencyAnalytics, getSummaryAnalytics } from "../services/analyticsService.js";
-import { listDraws } from "../services/drawService.js";
+import { listDrawsForHistory } from "../services/drawService.js";
 import { importCtLottoFile } from "../services/importService.js";
 import { evaluatePendingBacktestRuns, getPickerBacktestSummary, runDailyPickerBacktestCycle } from "../services/pickerBacktestService.js";
 import { generateTickets } from "../services/pickerService.js";
@@ -33,13 +33,14 @@ apiRouter.post("/imports/ct-lotto", upload.single("file"), (request, response) =
   }
 });
 
-apiRouter.get("/draws", (request, response) => {
+apiRouter.get("/draws", async (request, response) => {
   const querySchema = z.object({
     date: z.string().optional(),
     number: z.coerce.number().int().min(1).max(44).optional(),
+    jackpotWinnerCount: z.coerce.number().int().min(0).optional(),
   });
   const query = querySchema.parse(request.query);
-  response.json(listDraws(query));
+  response.json(await listDrawsForHistory(query));
 });
 
 apiRouter.get("/analytics/frequency", (_request, response) => {

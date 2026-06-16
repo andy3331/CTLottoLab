@@ -17,6 +17,7 @@ export interface ParsedImportRow {
 export interface RawImportRow {
   drawDateRaw: string;
   numbersRaw: string;
+  payoutsDateToken?: string | null;
 }
 
 export interface ParsedCtLottoGameInfo {
@@ -112,12 +113,17 @@ export function extractCtLottoTableRows(content: string): RawImportRow[] {
     }
     const drawDateRaw = $(cells[0]).text().trim();
     const numbersRaw = $(cells[1]).text().trim();
+    const payoutTokenMatch = /DisplayPayouts\(\d+,'(\d+)'/.exec($(cells[2]).find("a").attr("onclick") ?? "");
 
     if (!drawDateRaw || !numbersRaw) {
       return;
     }
 
-    rows.push({ drawDateRaw, numbersRaw });
+    rows.push({
+      drawDateRaw,
+      numbersRaw,
+      payoutsDateToken: payoutTokenMatch?.[1] ?? null,
+    });
   });
 
   return rows;

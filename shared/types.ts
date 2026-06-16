@@ -4,6 +4,7 @@ export interface DrawRecord {
   id: number;
   drawDate: string;
   numbers: number[];
+  jackpotWinnerCount: number | null;
   sourceFileName: string | null;
   importedAt: string;
 }
@@ -114,6 +115,7 @@ export interface GeneratedTicket {
 export interface DrawsQuery {
   date?: string;
   number?: number;
+  jackpotWinnerCount?: number;
 }
 
 export interface SyncStatus {

@@ -35,6 +35,8 @@ function initializeDatabase(db: Database.Database) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       game_id INTEGER NOT NULL,
       draw_date TEXT NOT NULL,
+      jackpot_winner_count INTEGER,
+      jackpot_winner_checked_at TEXT,
       source_file_name TEXT,
       imported_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(game_id, draw_date),
@@ -106,6 +108,8 @@ function initializeDatabase(db: Database.Database) {
     "human_likeness_reasons_json",
     "TEXT NOT NULL DEFAULT '[]'",
   );
+  ensureColumn(db, "draws", "jackpot_winner_count", "INTEGER");
+  ensureColumn(db, "draws", "jackpot_winner_checked_at", "TEXT");
 
   db.prepare(
     `

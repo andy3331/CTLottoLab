@@ -116,6 +116,7 @@ export function App() {
   const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
   const [dateFilter, setDateFilter] = useState("");
   const [numberFilter, setNumberFilter] = useState("");
+  const [jackpotWinnerFilter, setJackpotWinnerFilter] = useState("");
   const [status, setStatus] = useState<string>("");
   const [syncBusy, setSyncBusy] = useState(false);
   const [dashboardFavoriteModes, setDashboardFavoriteModes] = useState<PickerMode[]>(DEFAULT_DASHBOARD_FAVORITES);
@@ -201,6 +202,7 @@ export function App() {
       const result = await api.getDraws({
         date: dateFilter || undefined,
         number: numberFilter ? Number(numberFilter) : undefined,
+        jackpotWinnerCount: jackpotWinnerFilter ? Number(jackpotWinnerFilter) : undefined,
       });
       setDraws(result);
     } catch (error) {
@@ -576,10 +578,23 @@ export function App() {
             <div className="filters">
               <input value={dateFilter} onChange={(event) => setDateFilter(event.target.value)} placeholder="Filter by date (YYYY-MM or YYYY-MM-DD)" />
               <input value={numberFilter} onChange={(event) => setNumberFilter(event.target.value)} placeholder="Filter by number 1-44" />
+              <input
+                value={jackpotWinnerFilter}
+                onChange={(event) => setJackpotWinnerFilter(event.target.value)}
+                placeholder="Filter by jackpot winners (0, 1, 2...)"
+              />
               <button className="primary-btn" onClick={() => void handleHistorySearch()}>
                 Apply Filters
               </button>
-              <button className="ghost-btn" onClick={() => void refreshAll()}>
+              <button
+                className="ghost-btn"
+                onClick={() => {
+                  setDateFilter("");
+                  setNumberFilter("");
+                  setJackpotWinnerFilter("");
+                  void refreshAll();
+                }}
+              >
                 Reset
               </button>
             </div>
@@ -589,6 +604,7 @@ export function App() {
                   <tr>
                     <th>Draw Date</th>
                     <th>Winning Numbers</th>
+                    <th>Jackpot Winners</th>
                     <th>Source File</th>
                   </tr>
                 </thead>
@@ -608,6 +624,7 @@ export function App() {
                           <div className="combo-text">{draw.numbers.join(" - ")}</div>
                         </div>
                       </td>
+                      <td>{formatHistoryJackpotWinners(draw.jackpotWinnerCount)}</td>
                       <td>{draw.sourceFileName ?? "N/A"}</td>
                     </tr>
                   ))}
@@ -971,6 +988,14 @@ function formatLatestDrawWinnerLabel(summary: SummaryResponse) {
     return "No jackpot winner";
   }
   return count === 1 ? "1 jackpot winner" : `${count} jackpot winners`;
+}
+
+function formatHistoryJackpotWinners(count: number | null) {
+  if (count == null) {
+    return "Unknown";
+  }
+
+  return count === 1 ? "1 winner" : `${count} winners`;
 }
 
 function getRecentBacktestHighlight(summary: SummaryResponse) {
